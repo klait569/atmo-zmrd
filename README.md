@@ -1,4 +1,4 @@
-# Atmosphere Visualizer (v2)
+# Atmosphere Visualizer (v0.2.0)
 
 A browser-based geometric visualizer that reacts to microphone audio input and auto-selects visual modes based on inferred room atmosphere.
 
@@ -8,8 +8,12 @@ A browser-based geometric visualizer that reacts to microphone audio input and a
 - Multiple modes: `orbit`, `particles`, `lattice`, `pulse`
 - Smooth mode transitions with selectable speed
 - Live microphone audio analysis with energy tracking
+- Beat detection and BPM calculation
+- 5 color schemes: default, hot, cold, gray, random
+- Floating shapes system for dynamic visuals
 - Basic atmosphere inference: `ambient`, `quiet`, `calm`, `bright`, `energetic`
 - Auto-adaptation from inferred atmosphere to visualization mode
+- **Modular ES6 architecture** - see [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ## Run locally
 
