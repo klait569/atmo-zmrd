@@ -13,6 +13,7 @@
         position: fixed;
         top: 1rem;
         left: 1rem;
+        right: 1rem;
         background: rgba(8, 12, 24, 0.6);
         border: 1px solid rgba(255,255,255,0.12);
         border-radius: 12px;
@@ -32,6 +33,38 @@
         padding: 0.4rem 0.6rem;
       }
       .label { color: #bcd0ff; font-size: 0.85rem; }
+
+      .hud-right {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.8rem;
+      }
+      .levels {
+        display: inline-flex;
+        align-items: flex-end;
+        gap: 0.25rem;
+        height: 28px;
+      }
+      .level {
+        --level: 0;
+        width: 8px;
+        height: calc(6px + min(1, var(--level)) * 22px);
+        border-radius: 3px;
+        background: linear-gradient(180deg, #8bdcff 0%, #4f8cff 100%);
+        box-shadow: 0 0 8px rgba(84, 163, 255, 0.45);
+        transition: height 110ms linear;
+      }
+      .level-mid {
+        background: linear-gradient(180deg, #b6c9ff 0%, #6992ff 100%);
+      }
+      .level-treble {
+        background: linear-gradient(180deg, #d5b9ff 0%, #8f6aff 100%);
+      }
+      .bpm {
+        min-width: 72px;
+        text-align: right;
+      }
     </style>
   </head>
   <body>

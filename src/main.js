@@ -42,7 +42,30 @@ const audioLabel = document.createElement('span');
 audioLabel.className = 'label';
 audioLabel.textContent = 'Energy: 0.00';
 
-hud.append(micBtn, autoBtn, modeSelect, transitionSelect, atmosphereLabel, audioLabel);
+const rightPanel = document.createElement('div');
+rightPanel.className = 'hud-right';
+
+const levels = document.createElement('div');
+levels.className = 'levels';
+
+const bassBar = document.createElement('span');
+bassBar.className = 'level level-bass';
+
+const midBar = document.createElement('span');
+midBar.className = 'level level-mid';
+
+const trebleBar = document.createElement('span');
+trebleBar.className = 'level level-treble';
+
+levels.append(bassBar, midBar, trebleBar);
+
+const bpmLabel = document.createElement('span');
+bpmLabel.className = 'label bpm';
+bpmLabel.textContent = 'BPM: --';
+
+rightPanel.append(levels, bpmLabel);
+
+hud.append(micBtn, autoBtn, modeSelect, transitionSelect, atmosphereLabel, audioLabel, rightPanel);
 app.appendChild(hud);
 
 function resize() {
@@ -77,7 +100,12 @@ const audioState = {
   treble: 0,
   centroid: 0,
   energy: 0,
+  bpm: 0,
+  beatPulse: 0,
 };
+
+const beatTimes = [];
+let lastBeatAt = 0;
 
 let analyzer;
 let dataArray;
@@ -120,6 +148,8 @@ function updateAudio() {
     audioState.mid *= 0.95;
     audioState.treble *= 0.95;
     audioState.energy *= 0.94;
+    audioState.beatPulse *= 0.93;
+    audioState.bpm *= 0.97;
     return;
   }
 
@@ -162,6 +192,28 @@ function updateAudio() {
 
   const energyRaw = Math.min(1, audioState.rms * 1.5 + audioState.bass * 0.65 + audioState.treble * 0.25);
   audioState.energy = audioState.energy * 0.85 + energyRaw * 0.15;
+
+  const now = performance.now();
+  const beatThreshold = 0.23 + audioState.energy * 0.3;
+  const isBeat = audioState.bass > beatThreshold && audioState.rms > 0.06 && now - lastBeatAt > 220;
+
+  if (isBeat) {
+    lastBeatAt = now;
+    beatTimes.push(now);
+    while (beatTimes.length > 0 && now - beatTimes[0] > 12000) beatTimes.shift();
+
+    if (beatTimes.length > 3) {
+      const span = beatTimes[beatTimes.length - 1] - beatTimes[0];
+      const avgInterval = span / (beatTimes.length - 1);
+      const instantBpm = avgInterval > 0 ? 60000 / avgInterval : 0;
+      const clamped = Math.min(220, Math.max(40, instantBpm));
+      audioState.bpm = audioState.bpm * 0.82 + clamped * 0.18;
+    }
+
+    audioState.beatPulse = 1;
+  } else {
+    audioState.beatPulse *= 0.92;
+  }
 }
 
 const atmosphereHistory = [];
@@ -343,6 +395,11 @@ function frame(now) {
   const atmosphere = inferAtmosphereStable();
   atmosphereLabel.textContent = `Atmosphere: ${atmosphere}`;
   audioLabel.textContent = `Energy: ${audioState.energy.toFixed(2)}`;
+
+  bassBar.style.setProperty('--level', audioState.bass.toFixed(3));
+  midBar.style.setProperty('--level', audioState.mid.toFixed(3));
+  trebleBar.style.setProperty('--level', audioState.treble.toFixed(3));
+  bpmLabel.textContent = audioState.bpm > 0 ? `BPM: ${Math.round(audioState.bpm)}` : 'BPM: --';
 
   if (autoAtmosphere && now - state.lastSwitchAt > 2800) {
     const desiredMode = atmosphereToMode[atmosphere] || 'orbit';
